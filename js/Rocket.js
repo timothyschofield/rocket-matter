@@ -42,12 +42,12 @@ function Rocket(world, engine, xPos, yPos, imageHandle) {
     this.addRocketEventListener(addForceLeft, 'mouseup', fnstopForceLeft, false);
 
     var fireButton = document.getElementById('fireButton');
-    this.addRocketEventListener(fireButton, 'touchstart', this.fire, false);
-    this.addRocketEventListener(fireButton, 'mousedown', this.fire, false);
+    this.addRocketEventListener(fireButton, 'touchstart', fnFire, false);
+    this.addRocketEventListener(fireButton, 'mousedown', fnFire, false);
 
     var pauseButton = document.getElementById('pauseButton');
-    this.addRocketEventListener(pauseButton, 'touchstart', this.pause, false);
-    this.addRocketEventListener(pauseButton, 'mousedown', this.pause, false);
+    this.addRocketEventListener(pauseButton, 'touchstart', fnPause, false);
+    this.addRocketEventListener(pauseButton, 'mousedown', fnPause, false);
 
     var self = this;
     function fnaddForceY(e) {self.body.rocketForce.y = -self.engineStrengthY;}
@@ -56,6 +56,10 @@ function Rocket(world, engine, xPos, yPos, imageHandle) {
     function fnstopForceRight(e) {self.body.rocketForce.x = 0;}
     function fnaddForceLeft(e) {self.body.rocketForce.x = -self.engineStrengthX;}
     function fnstopForceLeft(e) {self.body.rocketForce.x = 0;}
+
+    function fnFire(e) { self.fire(); };
+    function fnPause(e) { self.pause(); };
+
 
     // restitution makes it bounce
     this.body = Matter.Bodies.rocket(this.xPos, this.yPos, { 
@@ -71,9 +75,9 @@ function Rocket(world, engine, xPos, yPos, imageHandle) {
                             }
                         }
                     });
-
+                      
     this.body.rocketImg = this.imageHandle;
-  
+   
 }
 /*
  */
@@ -98,6 +102,7 @@ Rocket.prototype.fire = function () {
 /*
  */
 Rocket.prototype.pause = function () {
+    console.log("here")
     this.engine.enabled = !this.engine.enabled;
 };
 /*

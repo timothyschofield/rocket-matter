@@ -205,6 +205,7 @@
                 // rockets has its own gravitational influence and has rocket engines
                 if (body.rocket) {
                     body.force.y += body.mass * (body.rocketGravityStrength.y + body.rocketForce.y) * 0.001;
+                    //console.log("body.rocketGravityStrength.y", body.rocketGravityStrength.y);
                     body.force.x += body.mass * (body.rocketGravityStrength.x + body.rocketForce.x) * 0.001;
 
                 } else {
@@ -922,7 +923,7 @@
         * @param {engine} engine
         * @return {array} collisions
 
-         >>>>>>>>>>>>>>>>>>>>>>>>> We don't use this by default
+        >>>>>>>>>>>>>>>>>>>>>>>>> We don't use this by default
         */
         Detector.bruteForce = function (bodies, engine) {
             console.log(" Detector.bruteForce")

@@ -248,8 +248,11 @@
 
                 function doOnOrientationChange() {
                     // makes sure the page always has its tlhc at the tlhc of the window
-                    window.scrollTo(0, 0);
-
+                    if(navigator.platform !== "desktop") {
+                         window.scrollTo(0, 0);
+                    }
+                   
+                     
                     switch (window.orientation) {
                         case 0:   // Portrait
                             $splashScreen.removeClass('splashScreenLandscape');
