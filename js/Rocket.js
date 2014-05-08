@@ -12,7 +12,7 @@ function Rocket(world, engine, xPos, yPos, imageHandle) {
     this.imageHandle = imageHandle;
 
     this.engineStrengthX = 0.5;
-    this.engineStrengthY = 0.5;
+    this.engineStrengthY = 0.7;
 
     this.listeners = [];
 
@@ -62,8 +62,8 @@ function Rocket(world, engine, xPos, yPos, imageHandle) {
                         frictionAir: 0.05, 
                         friction: 0.01,
                         rocket: true, 
-                        rocketGravityStrength: { x: 0.0, y: 0.0 },
-                        rocketForce: { x: 0, y: 0 },
+                        rocketGravityStrength: { x: 0.0, y: 0.25 },
+                        rocketForce: { x: 0, y: 0.0 },
                         restitution: 0.5,
                         render: {
                             sprite: {
