@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]>    <html class="no-js iem7"> <![endif]-->
+<!--[if (gt IEMobile 7)|!(IEMobile)]><!--> <html class="no-js"> <!--<![endif]-->
+<!-- no-js is JavaScript disabled. FOUC means Flash Of Unstyled Content -->
+    <head>
+        <meta charset="utf-8">
+
+        <title>Rocket Matter</title>
+
+        <meta name="description" content="Rocket Matter">
+
+        <!--The HandheldFriendly meta-tag was used initially by older Palm and Blackberry models as well as browsers like AvantGo. -->
+        <meta name="HandheldFriendly" content="True">
+
+        <!-- Microsoft introduced the MobileOptimized tag for the PocketPC. -->
+        <meta name="MobileOptimized" content="320">
+
+        <!--
+        The following is more widely supported by modern smartphones.
+        The width property controls the size of the viewport.
+        It can be set to a specific number of pixels like width=600 or to
+        the special value device-width value which is the width of the screen in CSS pixels at a scale of 100%.
+        There are corresponding height and device-height values.
+        The initial-scale property controls the zoom level when the page is first loaded.
+        The maximum-scale, minimum-scale, and user-scalable properties control how users are allowed to zoom the page in or out.
+        -->
+
+        <!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
+        <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no"> -->
+        <!-- minimal-ui works for iOS 7.1 This new viewport flag hides the Safari UI by default (only a small title bar with URL and SSL indicator are shown) -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, minimal-ui">
+
+        <!-- Mobile Internet Explorer allows us to activate ClearType technology for smoothing fonts for easy reading -->
+        <meta http-equiv="cleartype" content="on">
+
+        <!-- Home screen icon set for various devices -->
+        <link rel="apple-touch-icon-precomposed" sizes="144x144" href="img/touch/apple-touch-icon-144x144-precomposed.png">
+        <link rel="apple-touch-icon-precomposed" sizes="114x114" href="img/touch/apple-touch-icon-114x114-precomposed.png">
+        <link rel="apple-touch-icon-precomposed" sizes="72x72" href="img/touch/apple-touch-icon-72x72-precomposed.png">
+        <link rel="apple-touch-icon-precomposed" href="img/touch/apple-touch-icon-57x57-precomposed.png">
+        <link rel="shortcut icon" href="img/touch/apple-touch-icon.png">
+
+        <!-- Tile icon for Win8 (144x144 + tile color) -->
+        <meta name="msapplication-TileImage" content="img/touch/apple-touch-icon-144x144-precomposed.png">
+        <meta name="msapplication-TileColor" content="#222222">
+
+        <!-- For iOS web apps. Delete if not needed. https://github.com/h5bp/mobile-boilerplate/issues/94 -->
+
+        <!-- Makes the web page run in full screen mode when launched from the home screen icon;
+        also hides the address bar and component bar at the top and bottom of the browser. -->
+        <meta name="apple-mobile-web-app-capable" content="yes">
+
+        <!-- Styles the bar at the top of the browser -->
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <meta name="apple-mobile-web-app-title" content="Mobile Template">
+
+
+        <!-- This script prevents links from opening in Mobile Safari. https://gist.github.com/1042026 -->
+        <!--
+        <script>(function(a,b,c){if(c in b&&b[c]){var d,e=a.location,f=/^(a|html)$/i;a.addEventListener("click",function(a){d=a.target;while(!f.test(d.nodeName))d=d.parentNode;"href"in d&&(d.href.indexOf("http")||~d.href.indexOf(e.host))&&(a.preventDefault(),e.href=d.href)},!1)}})(document,window.navigator,"standalone")</script>
+        -->
+
+        <!-- Our reset -->
+        <link rel="stylesheet" href="css/normalize.css">
+        <link href="./js/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" media="screen">
+        <link rel="stylesheet" href="css/loadingSpinner.css">
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing:border-box;
+            -moz-box-sizing:border-box;
+        }
+        body {
+            background: #444;
+            font: 16px 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #aaa;
+            overflow-x: hidden;
+            overflow-y: hidden;
+        }
+        h1 {
+            color: #fff;
+            display: block;
+            margin: 0 0 1em 0;
+            font-weight: normal;
+            font-size: 30px;
+        }
+        #container {
+            width:  800px;
+            margin: 0 auto;
+            background-color:blue;
+            overflow: hidden;
+        }
+        #controls {
+            height: 40px;
+            background-color: #444;
+        }
+        .myWideButton {
+            width: 85px;
+            margin-top: 5px;
+            margin-left: 10px;
+        }
+        #rocketGameResetButton {
+            margin-top: 5px;
+            margin-left: 5px;
+        }
+        #splashScreen {
+            background: -webkit-linear-gradient(black, white);
+            background: -moz-linear-gradient(black, white);
+            background: -ms-linear-gradient(black, white);
+            border: 8px solid grey;
+            font: bold 16pt Arial;
+            color : white;
+            text-align: center;
+        }
+        #tributeText {
+            position: relative;
+            top: 80px;
+        }
+        #floatingCirclesG {
+            position: relative;
+            margin: auto;
+            top: 80px;
+        }
+        #rocketGame {
+            display: none;
+        }
+        #messageText {  
+            display: none;
+        }
+        /* The canvas NOT the canvas-container */ 
+        
+        /* max-width and max-height cause the canvas to stretch to the size of its container
+           Its container is #canvasClip - so #canvasClip needs to be responsive */
+
+        canvas:active {
+            cursor: pointer;
+            cursor: -webkit-grabbing;
+        }
+        #canvas-container {
+            position:  relative;
+        }
+        
+        @media (min-device-width: 800px) {    
+            canvas {
+                width: 1600px;       
+                height: 467px;
+                vertical-align: bottom; /* get rid of ghost margin which results from <canvas> being an inline element */
+            }
+            #canvasClip {
+               width: 800px;
+               overflow:  hidden;
+            }
+            .splashScreenLandscape {
+                width: 800px;      
+                height: 507px;    /* 467 + 40 for controls */ 
+            }       
+
+        } 
+        
+        @media (max-device-width: 480px) {
+            canvas {
+                width: 960px;       
+                height: 280px;
+                vertical-align: bottom; /* get rid of ghost margin which results from <canvas> being an inline element */
+            }
+            #canvasClip {
+               width: 480px;
+               overflow:  hidden;
+            } 
+            .splashScreenPortrait {
+                width: 320px;       /* iPhone width in portrait */ 
+                height: 441px;      /* iPhone height in portrait minus small title bar */ 
+            }
+            .splashScreenLandscape {
+                width: 480px;       /* iPhone width in landscape */ 
+                height: 320px;      /* iPhone height in landscape */
+            }         
+        
+        }
+     
+    </style>
+
+        <!-- Modernizr is a JavaScript library which adds classes to the html element based on the results of
+        feature test and which ensures that all browsers can make use of HTML5 elements
+        Modernizr script needs to run before the browser begins rendering the page, so that browsers lacking support
+        for some of the new HTML5 elements are able to handle them properly.
+        Therefore the Modernizr script is the only JavaScript file synchronously loaded at the top of the document.-->
+        <script src="js/lib/modernizr-2.6.2.min.js"></script>
+    </head>
+    <body>
+        <div id="container">
+            <div id="splashScreen">
+                <div id="tributeText">Rocket-Matter</div>
+                <div id="output"></div>
+                <div id="floatingCirclesG">
+                    <div class="f_circleG" id="frotateG_01"></div>
+                    <div class="f_circleG" id="frotateG_02"></div>
+                    <div class="f_circleG" id="frotateG_03"></div>
+                    <div class="f_circleG" id="frotateG_04"></div>
+                    <div class="f_circleG" id="frotateG_05"></div>
+                    <div class="f_circleG" id="frotateG_06"></div>
+                    <div class="f_circleG" id="frotateG_07"></div>
+                    <div class="f_circleG" id="frotateG_08"></div>
+                </div>
+                <div id="messageText"></div>
+            </div>
+            <div id="rocketGame">
+                <div id="canvasClip">
+                    <div id="canvas-container"></div>
+                </div>
+                <div id="controls">
+                    <button id="rocketGameResetButton" type="button" class="btn btn-primary btn-sm">Reset</button>
+                    <button id="addForceLeft" type="button" class="btn btn-primary btn-sm myWideButton">LEFT</button>
+                    <button id="addForceY" type="button" class="btn btn-primary btn-sm myWideButton">UP</button>
+                    <button id="addForceRight" type="button" class="btn btn-primary btn-sm myWideButton">RIGHT</button>
+                    <button id="fireButton" type="button" class="btn btn-primary btn-sm myWideButton">Fire!</button>
+                    <button id="pauseButton" type="button" class="btn btn-primary btn-sm myWideButton">Pause</button>
+                </div>     
+            </div>
+        </div>
+
+        <!-- Zepto is a minimalist JavaScript library for modern browsers with a largely jQuery-compatible API. -->
+        <script src="js/lib/mobile/zepto.min.js"></script>
+
+        <!-- Mobile boilerplate helper functions -->
+        <script src="js/lib/mobile/helper.js"></script>
+
+        <!-- Gets rid of 300ms delay when clicking -->
+        <script src="js/lib/mobile/fastclick.js"></script>
+
+        <script>
+            $(document).ready(function () {
+               
+                //console.log("platform is " + navigator.platform);
+                //$('#output').text(navigator.platform);
+
+                FastClick.attach(document.body);
+
+                // Disable Elastic Scrolling
+                // not ontouchstart because that blocks clicks
+                document.ontouchmove = function (e) {
+                    e.preventDefault();
+                };
+
+                var $splashScreen = $('#splashScreen');
+                var $rocketGame = $('#rocketGame');
+
+                function doOnOrientationChange() {
+                    // makes sure the page always has its tlhc at the tlhc of the window
+                    window.scrollTo(0, 0);
+
+                    switch (window.orientation) {
+                        case 0:   // Portrait
+                            $splashScreen.removeClass('splashScreenLandscape');
+                            $splashScreen.addClass('splashScreenPortrait');
+                            break;
+                        case 90:  // Landscape
+                            $splashScreen.removeClass('splashScreenPortrait');
+                            $splashScreen.addClass('splashScreenLandscape');
+                            break;
+                        case -90: // counterclockwise Landscape
+                            $splashScreen.removeClass('splashScreenPortrait');
+                            $splashScreen.addClass('splashScreenLandscape');
+                            break;
+                        default:
+                            $splashScreen.removeClass('splashScreenPortrait');
+                            $splashScreen.addClass('splashScreenLandscape');
+                    }
+
+                    window.RocketGame.changeOrientation(window.orientation);
+                }
+
+                window.addEventListener('orientationchange', doOnOrientationChange);
+                // Initial execution
+                doOnOrientationChange();
+
+            });
+        </script>
+
+        <script type="text/javascript" src="./js/lib/jquery/jquery.js"></script>
+        
+        <script type="text/javascript" src="./js/lib/matter-rocket/pixi.dev.js"></script>
+        <!-- <script type="text/javascript" src="./js/lib/matter-rocket/dat.gui.min.js"></script> -->
+        <!--<script type="text/javascript" src="./js/lib/matter-rocket/resurrect.js"></script> -->
+        <script type="text/javascript" src="./js/lib/matter-rocket/matter-0.7.0.js"></script>
+
+        <script>
+            // must be loaded before loading rocket-matter.js
+            function getWorld() { return null; };
+        </script>
+        <script type="text/javascript" src="./rocket-matter.js"></script>
+
+        <script type="text/javascript" src="./js/EventDispatcher.js"></script>
+        <script type="text/javascript" src="./js/Keys.js"></script>
+
+        <script type="text/javascript" src="./js/BlockWorld.js"></script>
+
+        <script type="text/javascript" src="./js/BlockWorld.js"></script>
+        <script type="text/javascript" src="./js/Block.js"></script>
+        <script type="text/javascript" src="./js/Rocket.js"></script>
+
+        <script type="text/javascript" src="./js/RocketGame.js"></script>
+
+
+        <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
+        <script>
+            var _gaq=[["_setAccount","UA-XXXXX-X"],["_trackPageview"]];
+            (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];g.async=1;
+            g.src=("https:"==location.protocol?"//ssl":"//www")+".google-analytics.com/ga.js";
+            s.parentNode.insertBefore(g,s)}(document,"script"));
+        </script>
+    </body>
+</html>
