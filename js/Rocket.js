@@ -70,7 +70,7 @@ function Rocket(world, engine, xPos, yPos, imageHandle) {
                         frictionAir: 0.05, 
                         friction: 0.01,
                         rocket: true, 
-                        rocketGravityStrength: { x: 0.0, y: 0.0 },    // 0.25
+                        rocketGravityStrength: { x: 0.0, y: 0.25 },    // 0.25
                         rocketForce: { x: 0, y: 0.0 },
                         restitution: 0.5,
                         render: {
