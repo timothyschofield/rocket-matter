@@ -84,7 +84,7 @@ function Rocket(world, engine, xPos, yPos, imageHandle) {
 Rocket.prototype.fire = function () {
     var bulletW = 10;
     var bulletH = 10;
-    var gunOffsetX = 75;
+    var gunOffsetX = 37;
     var gunOffsetY = 0;
     var gunPosX = this.body.position.x + gunOffsetX;
     var gunPosY = this.body.position.y + gunOffsetY;
@@ -102,7 +102,6 @@ Rocket.prototype.fire = function () {
 /*
  */
 Rocket.prototype.pause = function () {
-    console.log("here")
     this.engine.enabled = !this.engine.enabled;
 };
 /*

@@ -65,30 +65,17 @@
         <link href="./js/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" media="screen">
         <link rel="stylesheet" href="css/loadingSpinner.css">
     <style>
-        * {
-            padding: 0;
-            margin: 0;
-            box-sizing:border-box;
-            -moz-box-sizing:border-box;
-        }
         body {
             background: #444;
             font: 16px 'Helvetica Neue', Helvetica, Arial, sans-serif;
             color: #aaa;
             overflow-x: hidden;
             overflow-y: hidden;
-        }
-        h1 {
-            color: #fff;
-            display: block;
-            margin: 0 0 1em 0;
-            font-weight: normal;
-            font-size: 30px;
-        }
+        } 
         #container {
             width:  800px;
             margin: 0 auto;
-            background-color:blue;
+            background-color:#444;
             overflow: hidden;
         }
         #controls {
@@ -166,7 +153,7 @@
             }
             #canvasClip {
                width: 480px;
-               overflow:  hidden;
+               overflow: hidden;
             } 
             .splashScreenPortrait {
                 width: 320px;       /* iPhone width in portrait */ 
@@ -233,11 +220,10 @@
             $(document).ready(function () {
                
                 //console.log("platform is " + navigator.platform);
-                //$('#output').text(navigator.platform);
 
                 FastClick.attach(document.body);
 
-                // Disable Elastic Scrolling
+                // Disable elastic scrolling
                 // not ontouchstart because that blocks clicks
                 document.ontouchmove = function (e) {
                     e.preventDefault();
@@ -250,8 +236,7 @@
                     // makes sure the page always has its tlhc at the tlhc of the window
                     if(navigator.platform !== "desktop") {
                          window.scrollTo(0, 0);
-                    }
-                   
+                    }    
                      
                     switch (window.orientation) {
                         case 0:   // Portrait
@@ -283,26 +268,24 @@
 
         <script type="text/javascript" src="./js/lib/jquery/jquery.js"></script>
         
-        <script type="text/javascript" src="./js/lib/matter-rocket/pixi.dev.js"></script>
-        <!-- <script type="text/javascript" src="./js/lib/matter-rocket/dat.gui.min.js"></script> -->
-        <!--<script type="text/javascript" src="./js/lib/matter-rocket/resurrect.js"></script> -->
+        <!-- WebGL not supported -->
+        <!-- <script type="text/javascript" src="./js/lib/matter-rocket/pixi.dev.js"></script> -->
+
         <script type="text/javascript" src="./js/lib/matter-rocket/matter-0.7.0.js"></script>
 
         <script>
-            // must be loaded before loading rocket-matter.js
+            // must be here before loading rocket-matter.js
             function getWorld() { return null; };
         </script>
+
+        <!-- The world description in json wrapped in function getWorld -->
         <script type="text/javascript" src="./rocket-matter.js"></script>
 
         <script type="text/javascript" src="./js/EventDispatcher.js"></script>
         <script type="text/javascript" src="./js/Keys.js"></script>
-
-        <script type="text/javascript" src="./js/BlockWorld.js"></script>
-
         <script type="text/javascript" src="./js/BlockWorld.js"></script>
         <script type="text/javascript" src="./js/Block.js"></script>
         <script type="text/javascript" src="./js/Rocket.js"></script>
-
         <script type="text/javascript" src="./js/RocketGame.js"></script>
 
 

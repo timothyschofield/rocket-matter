@@ -31,7 +31,7 @@
 (function () {
 
     var Matter = {};
-
+    Matter.bulletsToDeleteList = [];
     // Begin Matter namespace closure
 
     // All Matter modules are included below during build
@@ -148,7 +148,7 @@
 
             // Common.choose(['#556270', '#4ECDC4', '#C7F464', '#FF6B6B', '#C44D58']));
             body.anglePrev = body.anglePrev || body.angle;
-            body.render.fillStyle = body.render.fillStyle || (body.isStatic ? '#eeeeee' : Common.choose(['#4ECDC4'])); //Common.choose(['#556270', '#4ECDC4', '#C7F464', '#FF6B6B', '#C44D58']));
+            body.render.fillStyle = body.render.fillStyle || (body.isStatic ? '#eeeeee' : Common.choose(['#ff0000'])); //Common.choose(['#556270', '#4ECDC4', '#C7F464', '#FF6B6B', '#C44D58']));
             body.render.strokeStyle = body.render.strokeStyle || Common.shadeColor(body.render.fillStyle, -20);
 
             // update geometry
@@ -205,7 +205,6 @@
                 // rockets has its own gravitational influence and has rocket engines
                 if (body.rocket) {
                     body.force.y += body.mass * (body.rocketGravityStrength.y + body.rocketForce.y) * 0.001;
-                    //console.log("body.rocketGravityStrength.y", body.rocketGravityStrength.y);
                     body.force.x += body.mass * (body.rocketGravityStrength.x + body.rocketForce.x) * 0.001;
 
                 } else {
@@ -563,6 +562,9 @@
         Composite.removeBody = function (composite, body, deep) {
             var position = composite.bodies.indexOf(body);
             var x = position;
+
+            //console.log("removeBody", composite.id, body.id)
+
 
             if (position !== -1) {
                 Composite.removeBodyAt(composite, position);
@@ -1319,10 +1321,21 @@
             var bodyA = collision.bodyA,
             bodyB = collision.bodyB;
 
-
-            if (bodyA.bullet || bodyB.bullet) {
-                // timestamp = 0;
+            if (bodyA.bullet) {
+                if (Matter.bulletsToDeleteList.indexOf(bodyA) === -1) {
+                    Matter.bulletsToDeleteList.push(bodyA);
+                    //console.log(bodyA.id, "numBullets to delete", Matter.bulletsToDeleteList.length);
+                }
             }
+
+
+            if (bodyB.bullet) {
+                if (Matter.bulletsToDeleteList.indexOf(bodyB) === -1) {
+                    Matter.bulletsToDeleteList.push(bodyB);
+                    //console.log(bodyB.id, "numBullets to delete", Matter.bulletsToDeleteList.length);
+                }
+            }
+
 
             var pair = {
                 id: Pair.id(bodyA, bodyB),
@@ -1343,7 +1356,7 @@
             Pair.update(pair, collision, timestamp);
 
             // Pair:1_4 between 1 and 4 
-            // console.log("Pair created:" + pair.id + " between " + bodyA.id + " and " + bodyB.id); // XXX
+            //console.log("Pair created:" + pair.id + " between " + bodyA.id + " and " + bodyB.id); // XXX
 
             return pair;
         };
@@ -1443,6 +1456,10 @@
         * @return {pairs} A new pairs structure
 
         This is a Pair object manager - only created once
+
+
+
+
         */
         Pairs.create = function (options) {
 
@@ -2794,7 +2811,7 @@
 
     (function () {
 
-        var _fps = 60,
+        var _fps = 60,  // was 60
         _deltaSampleSize = _fps,
         _delta = 1000 / _fps;
 
@@ -2825,7 +2842,7 @@
                 input: {},
                 events: [],
                 timing: {
-                    fps: _fps,
+                    fps: _fps,          // 
                     timestamp: 0,
                     delta: _delta,
                     correction: 1,
@@ -2877,10 +2894,13 @@
             deltaHistory = [];
 
             (function render(timestamp) {
+
                 _requestAnimationFrame(render);
 
                 if (!engine.enabled)
                     return;
+
+
 
                 // timestamp is undefined on the first update
                 timestamp = timestamp || 0;
@@ -2946,18 +2966,37 @@
                 * @param {} event.source The source object of the event
                 * @param {} event.name The name of the event
                 */
+
                 Events.trigger(engine, 'tick beforeUpdate', event);
 
                 // if world has been modified, clear the render scene graph
                 if (engine.world.isModified)
                     engine.render.controller.clear(engine.render);
 
+
                 // update
                 Engine.update(engine, delta, correction);
-
                 // trigger events that may have occured during the step
                 _triggerCollisionEvents(engine);
-                _triggerMouseEvents(engine);
+
+
+                _triggerMouseEvents(engine);  // This is where the events to delete get triggered <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+                var n;
+                var bulletsLen = Matter.bulletsToDeleteList.length;
+                var bulletToDelete;
+                //for (n = bulletsLen - 1; n >= 0; n--) {
+                n = 0;
+                if (bulletsLen > 0) {
+                    bulletToDelete = Matter.bulletsToDeleteList.pop();
+                    //console.log("deleting, ", bulletToDelete.id);
+
+                    Composite.remove(engine.world, bulletToDelete, true);
+                }
+                //}
+
+
+
 
                 /**
                 * Fired after engine update and all collision events
@@ -2977,11 +3016,17 @@
                 * @param {} event.source The source object of the event
                 * @param {} event.name The name of the event
                 */
+
+
+
                 Events.trigger(engine, 'afterUpdate beforeRender', event);
+
+
 
                 // render
                 if (engine.render.options.enabled)
                     engine.render.controller.world(engine);
+
 
                 /**
                 * Fired after rendering
@@ -3002,6 +3047,7 @@
                 * @param {} event.name The name of the event
                 */
                 Events.trigger(engine, 'afterTick afterRender', event);
+
             })();
         };
 
@@ -3015,8 +3061,17 @@
 
         broadphase is set by default
         */
+        var x = 1;
+        Engine.trace = function (n) {
+            if (x > n)
+                console.log(n);
+        };
+
+
         var oldCollisions, oldPairsLen;
         Engine.update = function (engine, delta, correction) {
+            Engine.trace(1);
+
             var world = engine.world,
             broadphase = engine.broadphase[engine.broadphase.current],
             broadphasePairs = [],
@@ -3033,6 +3088,7 @@
             if (engine.enableSleeping)
                 Sleeping.update(allBodies);
 
+
             // applies gravity to all bodies
             Body.applyGravityAll(allBodies, world.gravity);
 
@@ -3044,6 +3100,7 @@
             for (i = 0; i < engine.constraintIterations; i++) {
                 Constraint.solveAll(allConstraints);
             }
+
             Constraint.postSolveAll(allBodies);
 
 
@@ -3070,37 +3127,12 @@
                 broadphasePairs = allBodies;
             }
 
+
             // mid and narrowphase pass: find actual collisions, then create or update collision pairs
             // call to Detector.collisions(broadphasePairs, engine);
             // PHASE 2 (check boundaries) and PHASE 3 (use SAT to test for convex bodies colliding)
             var collisions = broadphase.detector(broadphasePairs, engine);
 
-
-            /*
-            var thisCollision;
-            var thisBodyA;
-            var thisBodyB;
-          
-            for (var n = 0; n < collisions.length; n++) {
-            thisCollision = collisions[n];
-            thisBodyA = thisCollision.bodyA;
-            thisBodyB = thisCollision.bodyB;
-
-            if (thisBodyA.bullet) {
-            // thisBodyA.position.x = thisBodyA.positionPrev.x = 200;
-            // thisBodyA.position.y = thisBodyA.positionPrev.y = 200;
-            // thisBodyA.isStatic = true;
-            //thisBodyA.render.visible = false;
-            }
-
-            if (thisBodyB.bullet) {
-            //thisBodyB.position.x = thisBodyB.positionPrev.x = 200;
-            //thisBodyB.position.y = thisBodyB.positionPrev.y = 200;                
-            //thisBodyB.isStatic = true;
-            //thisBodyB.render.visible = false;
-            }
-            }
-            */
 
             // update collision pairs
             // Based on the collisions this creates new Pair(s) if needed
@@ -3144,12 +3176,6 @@
             // clear all composite modified flags
             if (world.isModified)
                 Composite.setModified(world, false, false, true);
-
-
-
-
-
-
 
 
 

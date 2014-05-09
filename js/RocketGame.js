@@ -49,7 +49,7 @@
         RocketGame.rocketT = RocketGame.worldHeight / 2;
 
         RocketGame.doAnimation = true;
-        RocketGame.animTime = 45 * 1000; // for moving the canvas right
+        RocketGame.animTime = 40 * 1000; // for moving the canvas right
 
         if (RocketGame.platform === "desktop") {
             RocketGame.animaDistance = -800;
@@ -85,13 +85,13 @@
 
         var renderOptions = _engine.render.options;
         renderOptions.wireframes = false;             // wireframe or coloured blocks
-        renderOptions.showDebug = true;              // debug statistics overlayed on screen
+        renderOptions.showDebug = true;               // debug statistics overlayed on screen
         renderOptions.showBroadphase = false;
         renderOptions.showBounds = false;
         renderOptions.showVelocity = false;
-        renderOptions.showCollisions = true;
+        renderOptions.showCollisions = false;
         renderOptions.showAxes = false;
-        renderOptions.showPositions = true;
+        renderOptions.showPositions = false;
         renderOptions.showAngleIndicator = false;
         renderOptions.showIds = false;                // show numerical ids
         renderOptions.showShadows = false;            // used with coloured blocks
@@ -104,7 +104,7 @@
         RocketGame.initRocketGame();
     };
     /*
-        orientation comes from index.html
+    orientation comes from index.html
     */
     RocketGame.initRocketGame = function () {
 
@@ -148,7 +148,7 @@
                     }
                 }
             });
-             
+
     };
     /*
     */
@@ -218,11 +218,6 @@
             renderController.clear(_engine.render);
 
         if (Events) {
-
-            Events.on(_world, 'deletebody', function (event) {
-                // console.log("deletebody fired " + _engine.pairs.length)
-                // Composite.remove(_world, event.objToDelete, true);
-            });
 
             // clear all events
             Events.off(_engine);
