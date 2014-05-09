@@ -58,10 +58,7 @@
         }
 
         var canvasContainer = document.getElementById('canvas-container');
-        var rocketGameResetButton = document.getElementById('rocketGameResetButton');
-        rocketGameResetButton.addEventListener('click', function (e) {
-            RocketGame.initRocketGame();
-        });
+
 
         // engine options - these are the defaults
         var options = {
@@ -81,7 +78,7 @@
         // NOTE: this is actually Matter.Engine.create(), see the aliases at top of this file
         _engine = Engine.create(canvasContainer, options);
         _world = _engine.world;
-        _world.gravity.y = 1;                        // turn/off of gravity
+        _world.gravity.y = 1;                        // turn/off Block of gravity
 
         var renderOptions = _engine.render.options;
         renderOptions.wireframes = false;             // wireframe or coloured blocks

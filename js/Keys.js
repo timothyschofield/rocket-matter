@@ -1,6 +1,5 @@
 /*
 */
-
     Keys.KEYDOWN = "keydown";
     Keys.KEYUP = "keyup";
     Keys.theseKeysDown = {

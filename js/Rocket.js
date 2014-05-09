@@ -49,24 +49,28 @@ function Rocket(world, engine, xPos, yPos, imageHandle) {
     this.addRocketEventListener(pauseButton, 'touchstart', fnPause, false);
     this.addRocketEventListener(pauseButton, 'mousedown', fnPause, false);
 
+    var resetButton = document.getElementById('resetButton');
+    this.addRocketEventListener(resetButton, 'touchstart', fnReset, false);
+    this.addRocketEventListener(resetButton, 'mousedown', fnReset, false);
+
     var self = this;
-    function fnaddForceY(e) {self.body.rocketForce.y = -self.engineStrengthY;}
-    function fnstopForceY(e) {self.body.rocketForce.y = 0;}
-    function fnaddForceRight(e) {self.body.rocketForce.x = self.engineStrengthX;}
-    function fnstopForceRight(e) {self.body.rocketForce.x = 0;}
-    function fnaddForceLeft(e) {self.body.rocketForce.x = -self.engineStrengthX;}
-    function fnstopForceLeft(e) {self.body.rocketForce.x = 0;}
+    function fnaddForceY(e) { self.body.rocketForce.y = -self.engineStrengthY; };
+    function fnstopForceY(e) { self.body.rocketForce.y = 0; };
+    function fnaddForceRight(e) { self.body.rocketForce.x = self.engineStrengthX; };
+    function fnstopForceRight(e) { self.body.rocketForce.x = 0; };
+    function fnaddForceLeft(e) { self.body.rocketForce.x = -self.engineStrengthX; };
+    function fnstopForceLeft(e) { self.body.rocketForce.x = 0; };
 
     function fnFire(e) { self.fire(); };
     function fnPause(e) { self.pause(); };
-
+    function fnReset(e) { RocketGame.initRocketGame(); };
 
     // restitution makes it bounce
     this.body = Matter.Bodies.rocket(this.xPos, this.yPos, { 
                         frictionAir: 0.05, 
                         friction: 0.01,
                         rocket: true, 
-                        rocketGravityStrength: { x: 0.0, y: 0.25 },
+                        rocketGravityStrength: { x: 0.0, y: 0.0 },    // 0.25
                         rocketForce: { x: 0, y: 0.0 },
                         restitution: 0.5,
                         render: {
@@ -84,7 +88,7 @@ function Rocket(world, engine, xPos, yPos, imageHandle) {
 Rocket.prototype.fire = function () {
     var bulletW = 10;
     var bulletH = 10;
-    var gunOffsetX = 37;
+    var gunOffsetX = 40;
     var gunOffsetY = 0;
     var gunPosX = this.body.position.x + gunOffsetX;
     var gunPosY = this.body.position.y + gunOffsetY;
@@ -111,25 +115,34 @@ Rocket.prototype.doAction = function (eventData) {
     var self;
     if (eventData) {
         self = eventData.data.thisContext;
-    }  else {
+    } else {
         self = this;
     }
 
     var keys = this.thisKeys.getKeysDown();
+    /*
+    var print = "";
+    for (key in keys) {
+        print += key + ":" + keys[key] + ", ";
+    }
+    console.log(print);
+    */
 
-    if(keys.Fire) { self.fire(); };
+    if (keys.Fire) { 
+        self.fire(); 
+    };
 
     var upF = 0,
         downF = 0,
         rightF = 0,
         leftF = 0;
 
-    if(keys.Up) { upF = -self.engineStrengthY; }
-    if(keys.Down) { downF = self.engineStrengthY; }
+    if (keys.Up) { upF = -self.engineStrengthY; }
+    if (keys.Down) { downF = self.engineStrengthY; }
     self.body.rocketForce.y = upF + downF;
 
-    if(keys.Right) { rightF = self.engineStrengthX; }
-    if(keys.Left) { leftF = -self.engineStrengthX; }
+    if (keys.Right) { rightF = self.engineStrengthX; }
+    if (keys.Left) { leftF = -self.engineStrengthX; }
     self.body.rocketForce.x = rightF + leftF;
 
 };

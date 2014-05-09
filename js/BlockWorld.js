@@ -5,7 +5,7 @@
 function BlockWorld(world) {
 
     this.world = world;
-    this.defaultWorld = {"objects":[{"id":"id1","rectangle":{"left":-50,"top":-40,"width":1700,"height":50},"cssOptions":{"background-color":"green","border":"1px solid black"},"physicalOptions":{"frictionAir":0,"friction":0.1,"isStatic":true}},{"id":"id2","rectangle":{"left":-50,"top":460,"width":1700,"height":50},"cssOptions":{"background-color":"green","border":"1px solid black"},"physicalOptions":{"frictionAir":0,"friction":0.1,"isStatic":true}},{"id":"id3","rectangle":{"left":-40,"top":0,"width":50,"height":570},"cssOptions":{"background-color":"green","border":"1px solid black"},"physicalOptions":{"frictionAir":0,"friction":0.1,"isStatic":true}},{"id":"id4","rectangle":{"left":1590,"top":0,"width":50,"height":570},"cssOptions":{"background-color":"green","border":"1px solid black"},"physicalOptions":{"frictionAir":0,"friction":0.1,"isStatic":true}}]};
+    this.defaultWorld = {"items":[{"id":"id_rocket","type":"rocket","rect":{"left":350,"top":210,"width":100,"height":60},"cssOptions":{"background-color":"black","border":"1px solid black"},"physicalOptions":{"frictionAir":0.01,"friction":0.1}},{"id":"id1","type":"rectangle","rect":{"left":-50,"top":-40,"width":1700,"height":50},"cssOptions":{"background-color":"green","border":"1px solid black"},"physicalOptions":{"frictionAir":0,"friction":0.1,"isStatic":true}},{"id":"id2","type":"rectangle","rect":{"left":-50,"top":460,"width":1700,"height":50},"cssOptions":{"background-color":"green","border":"1px solid black"},"physicalOptions":{"frictionAir":0,"friction":0.1,"isStatic":true}},{"id":"id3","type":"rectangle","rect":{"left":-40,"top":0,"width":50,"height":570},"cssOptions":{"background-color":"green","border":"1px solid black"},"physicalOptions":{"frictionAir":0,"friction":0.1,"isStatic":true}},{"id":"id4","type":"rectangle","rect":{"left":1590,"top":0,"width":50,"height":570},"cssOptions":{"background-color":"green","border":"1px solid black"},"physicalOptions":{"frictionAir":0,"friction":0.1,"isStatic":true}}] }; 
 }
 /**
 */
@@ -22,11 +22,9 @@ BlockWorld.prototype.import = function () {
     // to use the defaultWorld
     var thisJSON = getWorld();
     if (!thisJSON) {
-        console.log("thisWorld default used");
+        console.log("No rocket-matter.js file was found, default used.");
         thisJSON = this.defaultWorld;
     }
-
-    console.log(thisJSON);
 
     var numItems = thisJSON.items.length;
 
