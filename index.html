@@ -14,7 +14,7 @@
 
         <!-- Microsoft introduced the MobileOptimized tag for the PocketPC. -->
         <meta name="MobileOptimized" content="320">
-
+         
         <!--
         The following is more widely supported by modern smartphones.
         The width property controls the size of the viewport.
@@ -78,14 +78,10 @@
             background-color:#444;
             overflow: hidden;
         }
-        #controls {
-            height: 40px;
-            background-color: #444;
-        }
-        .myWideButton {
-            width: 85px;
-            margin-top: 5px;
-            margin-left: 10px;
+        #rocketGame {
+            display: none;
+            position:  fixed;
+            background-color: blue;
         }
         #resetButton {
             margin-top: 5px;
@@ -109,9 +105,6 @@
             margin: auto;
             top: 80px;
         }
-        #rocketGame {
-            display: none;
-        }
         #messageText {  
             display: none;
         }
@@ -122,12 +115,13 @@
 
         canvas:active {
             cursor: pointer;
-            cursor: -webkit-grabbing;
+            xxcursor: -webkit-grabbing;
         }
         #canvas-container {
             position:  relative;
         }
         
+        /********** desktop **********/ 
         @media (min-device-width: 800px) {    
             canvas {
                 width: 1600px;       
@@ -141,10 +135,20 @@
             .splashScreenLandscape {
                 width: 800px;      
                 height: 507px;    /* 467 + 40 for controls */ 
-            }       
-
-        } 
+            }
+            #fireButton {
+                visibility: hidden;
+            }   
+            #resetButton {
+                font: normal 24px Arial;
+                width: 100px;
+                height: 30px;
+                top: 65px;         
+                left:  195px;  
+            }  
         
+        } 
+        /********* iPhone **********/
         @media (max-device-width: 480px) {
             canvas {
                 width: 960px;       
@@ -162,12 +166,111 @@
             .splashScreenLandscape {
                 width: 480px;       /* iPhone width in landscape */ 
                 height: 320px;      /* iPhone height in landscape */
-            }         
-        
+            }
+            #fireButton {
+                visibility: visible;
+            }
+            #resetButton {
+                font: normal 18px Arial;
+                width: 70px;
+                height: 30px;
+                top: 25px;         
+                left:  105px;  
+            }  
         }
-     
+        /***************************/
+        #fireButton {
+            position: absolute;  /* relative to rocketGame */
+            width: 200px;
+            height: 75px;
+            right: 0px;         /* right relative to the right of its container */
+            bottom:  0px;       /* bottom relative to the bottom of its container */
+            
+            background-color: red;
+            border:  1px solid black;
+            opacity:  0.75;
+            cursor:  pointer;
+            font: normal 32px Arial;
+        }
+        #fireTextContaner {
+            color:  white;
+            opacity: 1;  
+        }
+        #resetButton {
+            position: absolute;  
+            background-color: #428bca;
+            border:  2px solid white;
+            opacity:  0.85;
+            cursor:  pointer;
+        }
+        #resetTextContainer {
+            color:  white;
+            opacity: 1;
+            
+        }
+        .buttonTextContainer {
+      
+            display: table-cell;
+	        vertical-align: middle;
+            height:  inherit;
+            width:  inherit;
+            
+            user-select: none;
+           -webkit-user-select: none;
+           -moz-user-select: none;
+           -ms-user-select:none;
+           
+            cursor:  inherit;
+            text-align: center;
+        }
+        #debug {
+            visibility: hidden;
+            font: 12px Arial;
+            position: absolute;  /* relative to rocketGame */
+            width:  200px;
+            height:  200px;
+            background-color: white;
+            top:  200px;
+            left:  0px;
+            white-space: pre-wrap;
+            color:  black;
+        }
+        
+        /* NOT USED - I use jQuery animation */ 
+        /* smoother this way */
+        @-webkit-keyframes xxxKF {
+            0% { -webkit-transform: translate3d(0px, 0px, 0px); }
+            100% {-webkit-transform: translate3d(-800px, 0px, 0px); }
+        }
+        @-moz-keyframes xxxKF {
+            0% { -moz-transform: translate3d(0px, 0px, 0px); }
+            100% {-moz-transform: translate3d(-800px, 0px, 0px); }
+        }
+        @-ms-keyframes xxxKF {
+            0% { -ms-transform: translate3d(0px, 0px, 0px); }
+            100% {-ms-transform: translate3d(-800px, 0px, 0px); }
+        }
+        #canvas-container {
+            /* Chrome */
+            -webkit-animation-duration: 15s;
+            -webkit-animation-timing-function: linear;  /* linear, ease, ease-in, ease-out, ease-in-out, cubic-bezier(n,n,n,n) */
+            -webkit-animation-direction: normal;        /* normal, reverse, alternate, alternate-reverse */ 
+            -webkit-animation-fill-mode: forwards;      /* forward means it stops in the state of the last keyframe. none|forwards|backwards|both|initial|inherit */
+            
+            /* Firefox */ 
+            -moz-animation-duration: 15s;
+            -moz-animation-timing-function: linear;
+            -moz-animation-direction: normal;
+            -moz-animation-fill-mode: forwards; 
+            
+            /* IE */ 
+            -ms-animation-duration: 15s;
+            -ms-animation-timing-function: linear;
+            -ms-animation-direction: normal;
+            -ms-animation-fill-mode: forwards; 
+        }
+        
     </style>
-
         <!-- Modernizr is a JavaScript library which adds classes to the html element based on the results of
         feature test and which ensures that all browsers can make use of HTML5 elements
         Modernizr script needs to run before the browser begins rendering the page, so that browsers lacking support
@@ -177,6 +280,7 @@
     </head>
     <body>
         <div id="container">
+            
             <div id="splashScreen">
                 <div id="tributeText">Rocket-Matter</div>
                 <div id="output"></div>
@@ -193,18 +297,24 @@
                 <div id="messageText"></div>
             </div>
             <div id="rocketGame">
+               
                 <div id="canvasClip">
                     <div id="canvas-container"></div>
                 </div>
-                <div id="controls">
-                    <button id="resetButton" type="button" class="btn btn-primary btn-sm">Reset</button>
-                    <button id="addForceLeft" type="button" class="btn btn-primary btn-sm myWideButton">LEFT</button>
-                    <button id="addForceY" type="button" class="btn btn-primary btn-sm myWideButton">UP</button>
-                    <button id="addForceRight" type="button" class="btn btn-primary btn-sm myWideButton">RIGHT</button>
-                    <button id="fireButton" type="button" class="btn btn-primary btn-sm myWideButton">Fire!</button>
-                    <button id="pauseButton" type="button" class="btn btn-primary btn-sm myWideButton">Pause</button>
-                </div>     
+
+                <div id="debug"></div> 
+
+                <div id="fireButton">
+                    <div class="buttonTextContainer" id="fireTextContainer">Fire!</div>
+                </div>
+
+                <div id="resetButton">
+                    <div class="buttonTextContainer" id="resetTextContainer">reset</div>
+                </div>
+                <!-- <button id="pauseButton" type="button" class="btn btn-primary btn-sm">Pause</button> -->
+
             </div>
+            
         </div>
 
         <!-- Zepto is a minimalist JavaScript library for modern browsers with a largely jQuery-compatible API. -->
@@ -218,9 +328,9 @@
 
         <script>
             $(document).ready(function () {
-               
-                //console.log("platform is " + navigator.platform);
 
+                window.rocketGame = new RocketGame();
+                
                 FastClick.attach(document.body);
 
                 // Disable elastic scrolling
@@ -234,10 +344,10 @@
 
                 function doOnOrientationChange() {
                     // makes sure the page always has its tlhc at the tlhc of the window
-                    if(navigator.platform !== "desktop") {
-                         window.scrollTo(0, 0);
-                    }    
-                     
+                    if (navigator.platform !== "desktop") {
+                        window.scrollTo(0, 0);
+                    }
+
                     switch (window.orientation) {
                         case 0:   // Portrait
                             $splashScreen.removeClass('splashScreenLandscape');
@@ -256,12 +366,11 @@
                             $splashScreen.addClass('splashScreenLandscape');
                     }
 
-                    window.RocketGame.changeOrientation(window.orientation);
+                    window.rocketGame.changeOrientation(window.orientation);
                 }
 
                 window.addEventListener('orientationchange', doOnOrientationChange);
-                // Initial execution
-                doOnOrientationChange();
+                doOnOrientationChange();    // Initial execution
 
             });
         </script>
@@ -274,7 +383,7 @@
         <script type="text/javascript" src="./js/lib/matter-rocket/matter-0.7.0.js"></script>
 
         <script>
-            // must be here before loading rocket-matter.js
+            // must be here before loading rocket-matter.js world description
             function getWorld() { return null; };
         </script>
 
@@ -285,6 +394,11 @@
         <script type="text/javascript" src="./js/Keys.js"></script>
         <script type="text/javascript" src="./js/BlockWorld.js"></script>
         <script type="text/javascript" src="./js/Block.js"></script>
+       
+        <script type="text/javascript" src="./js/Draw.js"></script>
+        <script type="text/javascript" src="./js/CanvasButton.js"></script>
+
+        <script type="text/javascript" src="./js/DashBoard.js"></script>
         <script type="text/javascript" src="./js/Rocket.js"></script>
         <script type="text/javascript" src="./js/RocketGame.js"></script>
 

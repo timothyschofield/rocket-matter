@@ -2,77 +2,112 @@
  * Created by Timothy on 12/04/14.
   0, 0 is the top left hand of the screen, +ve x goes right, +ve y goes down
   xPos, yPos is the center of the rocket
- */
-function Rocket(world, engine, xPos, yPos, imageHandle) {
 
-    this.engine = engine;
-    this.world = world;
+      var key, text = "";
+    for(key in keys)
+        text += key + ":" + keys[key] + "  ";
+    console.log(text);
+ */
+
+function Rocket(rocketGame, xPos, yPos) {
+
+    this.rocketGame = rocketGame;
+    this.render = this.rocketGame.render;
+    this.engine = this.rocketGame.engine;
+    this.world = this.rocketGame.world;
+
     this.xPos = xPos;
     this.yPos = yPos;
-    this.imageHandle = imageHandle;
+ 
+    var $debug = $('#debug');
 
-    this.engineStrengthX = 0.5;
-    this.engineStrengthY = 0.7;
+    if (this.rocketGame.platform === "desktop") {
+		this.engineStrengthX = 0.5         // was 0.5
+		this.engineStrengthY = 0.7         // was 0.7 to overcome gravity
+    } else {
+		this.engineStrengthX = 0.5 * 2;    // we get 60fps on desktop and only 30fps on mobile
+		this.engineStrengthY = 0.7 * 2;    // so go figure!
+    }
 
-    this.listeners = [];
 
-    // probably shouldn't create Keys here - this should be a global thing used by all
+
+    this.mouseDown = false;
+
+    this.dashBoard = new DashBoard(this.rocketGame);
+
     this.thisKeys = new Keys();
     this.keyListeners = [];
-    this.keyListeners.push(this.thisKeys.addGameEventListener(Keys.KEYDOWN, this.doAction, this));
-    this.keyListeners.push(this.thisKeys.addGameEventListener(Keys.KEYUP, this.cutEngines, this));
+    this.keyListeners.push( this.thisKeys.addGameEventListener(Keys.KEYDOWN, this.doActionKeyDown, this) );
+    this.keyListeners.push( this.thisKeys.addGameEventListener(Keys.KEYUP, this.doActionKeyUp, this) );
 
-    // for touch screens and mouse clicks
-    var addForceY = document.getElementById('addForceY');
-    this.addRocketEventListener(addForceY, 'touchstart', fnaddForceY, false);
-    this.addRocketEventListener(addForceY, 'touchend', fnstopForceY, false);
-    this.addRocketEventListener(addForceY, 'mousedown', fnaddForceY, false);
-    this.addRocketEventListener(addForceY, 'mouseup', fnstopForceY, false);
+    this.rocketListeners = [];
+    this.rocketListeners.push( this.addGameEventListener('ROCKET_FIRE', this.fire, this) );
 
-    var addForceRight = document.getElementById('addForceRight');
-    this.addRocketEventListener(addForceRight,'touchstart', fnaddForceRight, false);
-    this.addRocketEventListener(addForceRight,'touchend', fnstopForceRight, false);
-    this.addRocketEventListener(addForceRight,'mousedown', fnaddForceRight, false);
-    this.addRocketEventListener(addForceRight,'mouseup', fnstopForceRight, false);
-
-    var addForceLeft = document.getElementById('addForceLeft');
-    this.addRocketEventListener(addForceLeft, 'touchstart', fnaddForceLeft, false);
-    this.addRocketEventListener(addForceLeft, 'touchend', fnstopForceLeft, false);
-    this.addRocketEventListener(addForceLeft, 'mousedown', fnaddForceLeft, false);
-    this.addRocketEventListener(addForceLeft, 'mouseup', fnstopForceLeft, false);
-
-    var fireButton = document.getElementById('fireButton');
-    this.addRocketEventListener(fireButton, 'touchstart', fnFire, false);
-    this.addRocketEventListener(fireButton, 'mousedown', fnFire, false);
-
-    var pauseButton = document.getElementById('pauseButton');
-    this.addRocketEventListener(pauseButton, 'touchstart', fnPause, false);
-    this.addRocketEventListener(pauseButton, 'mousedown', fnPause, false);
-
-    var resetButton = document.getElementById('resetButton');
-    this.addRocketEventListener(resetButton, 'touchstart', fnReset, false);
-    this.addRocketEventListener(resetButton, 'mousedown', fnReset, false);
+    this.domListeners = [];
 
     var self = this;
-    function fnaddForceY(e) { self.body.rocketForce.y = -self.engineStrengthY; };
-    function fnstopForceY(e) { self.body.rocketForce.y = 0; };
-    function fnaddForceRight(e) { self.body.rocketForce.x = self.engineStrengthX; };
-    function fnstopForceRight(e) { self.body.rocketForce.x = 0; };
-    function fnaddForceLeft(e) { self.body.rocketForce.x = -self.engineStrengthX; };
-    function fnstopForceLeft(e) { self.body.rocketForce.x = 0; };
+   
+    this.canvasID = document.getElementsByTagName('canvas')[0];  // the first and only canvas element
+    this.fireButtonID = document.getElementById('fireButton');
+    this.resetButtonID = document.getElementById('resetButton');
 
-    function fnFire(e) { self.fire(); };
-    function fnPause(e) { self.pause(); };
-    function fnReset(e) { RocketGame.initRocketGame(); };
+    /////////////////////////// MOUSE EVENTS ///////////////////////////
+    // addDOMEventListener(target, type, callback, bubble) - so they can be deleted automaticaly
 
-    // restitution makes it bounce
+    this.addDOMEventListener(this.canvasID, 'mousedown', function(event) {
+         if(event.offsetX) self.startEngines( {x: event.offsetX, y: event.offsetY} );   // chrome, IE
+         else  self.startEngines( {x: event.layerX, y: event.layerY} );                 // firefox
+     }, false);
+
+    this.addDOMEventListener(this.canvasID, 'mousemove', function(event) {
+        if(event.offsetX) self.fireEngines( {x: event.offsetX, y: event.offsetY} );     // chrome, IE
+        else self.fireEngines( {x: event.layerX, y: event.layerY} );                    // firefox
+    }, false);
+
+    this.addDOMEventListener(this.canvasID, 'mouseup',function(event) {
+        self.stopEngines();
+    }, false);
+
+    this.addDOMEventListener(this.fireButtonID, 'mousedown',function(event) {
+         self.fire(); 
+    }, false);
+
+    this.addDOMEventListener(this.resetButtonID, 'mousedown',function(event) {
+         self.rocketGame.initRocketGame();  
+    }, false);
+    /////////////////////////// TOUCH EVENTS ///////////////////////////
+    // addDOMEventListener(target, type, callback, bubble) - so they can be deleted automaticaly
+
+    this.addDOMEventListener(this.canvasID, 'touchstart', function(event) {
+        self.startEngines( {x: event.changedTouches[0].pageX, y: event.changedTouches[0].pageY} ); 
+    }, false);
+
+    this.addDOMEventListener(this.canvasID, 'touchmove',  function(event) {
+        self.fireEngines( {x: event.changedTouches[0].pageX, y: event.changedTouches[0].pageY} ); 
+        event.preventDefault(); // prevents the browser scrolling the page on touchmove
+    }, false);
+
+    this.addDOMEventListener(this.canvasID, 'touchend', function(event) {
+        self.stopEngines();
+    }, false);
+
+    this.addDOMEventListener(this.fireButtonID, 'touchstart', function(event) {
+        self.fire(); 
+    }, false);
+
+    this.addDOMEventListener(this.resetButtonID, 'touchstart', function(event) {
+        self.rocketGame.initRocketGame();  
+    }, false);
+    //////////////////////////// END EVENTS //////////////////////////////
+
     this.body = Matter.Bodies.rocket(this.xPos, this.yPos, { 
                         frictionAir: 0.05, 
                         friction: 0.01,
                         rocket: true, 
-                        rocketGravityStrength: { x: 0.0, y: 0.25 },    // 0.25
+                        rocketGravityStrength: { x: 0.0, y: 0.0 },      // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< GRAVITY 0.25
                         rocketForce: { x: 0, y: 0.0 },
-                        restitution: 0.5,
+                        restitution: 0.5,                               // restitution read bounce
+                     
                         render: {
                             sprite: {
                                 texture: './img/Rocket1.png'
@@ -80,117 +115,204 @@ function Rocket(world, engine, xPos, yPos, imageHandle) {
                         }
                     });
                       
-    this.body.rocketImg = this.imageHandle;
-   
 }
+Rocket.prototype = Object.create(EventDispatcher.prototype);
+Rocket.prototype.constructor = Rocket;
 /*
+    Fires a bullet
  */
-Rocket.prototype.fire = function () {
+Rocket.prototype.fire = function (event) {
+
+    var gunOffsetX = 45;
+    var gunOffsetY = 0;
+
     var bulletW = 10;
     var bulletH = 10;
-    var gunOffsetX = 40;
-    var gunOffsetY = 0;
+
     var gunPosX = this.body.position.x + gunOffsetX;
     var gunPosY = this.body.position.y + gunOffsetY;
-    var bulletSpeed = 20;
-  
-    Matter.World.addBody(this.world, Matter.Bodies.rectangle(gunPosX, gunPosY, bulletW, bulletH,
+
+    var bulletSpeed;
+    if(this.rocketGame.platform === "desktop") bulletSpeed = 20;
+    else bulletSpeed = 30;      // beacuse the mobile only runs at 30 fps and makes bullets droopy
+
+    //console.log(gunPosX)
+    Matter.World.add(this.world, Matter.Bodies.rectangle(gunPosX, gunPosY, bulletW, bulletH,
         {  frictionAir: 0.01 ,
            bullet: true,
-           bulletPositionPrev: {x: gunPosX - bulletSpeed, y: gunPosY},
-           bulletComposite: this.world,
-           markedForDelete: false
+           bulletPositionPrev: {x: gunPosX - bulletSpeed, y: gunPosY}
         })
     );
+   
 };
 /*
  */
-Rocket.prototype.pause = function () {
-    this.engine.enabled = !this.engine.enabled;
-};
-/*
- */
-Rocket.prototype.doAction = function (eventData) {
-
-    var self;
-    if (eventData) {
-        self = eventData.data.thisContext;
-    } else {
-        self = this;
-    }
-
+Rocket.prototype.doActionKeyDown = function () {
+ 
     var keys = this.thisKeys.getKeysDown();
-    /*
-    var print = "";
-    for (key in keys) {
-        print += key + ":" + keys[key] + ", ";
-    }
-    console.log(print);
-    */
-
-    if (keys.Fire) { 
-        self.fire(); 
-    };
-
-    var upF = 0,
-        downF = 0,
-        rightF = 0,
-        leftF = 0;
-
-    if (keys.Up) { upF = -self.engineStrengthY; }
-    if (keys.Down) { downF = self.engineStrengthY; }
-    self.body.rocketForce.y = upF + downF;
-
-    if (keys.Right) { rightF = self.engineStrengthX; }
-    if (keys.Left) { leftF = -self.engineStrengthX; }
-    self.body.rocketForce.x = rightF + leftF;
+    this.doMove(keys);
+    if(keys.Fire) this.fire(); 
 
 };
 /*
-    e.g. buttonX, 'mousedown', function () {...}, false
  */
-Rocket.prototype.addRocketEventListener = function (target, type, callback, bubble) {
-    this.listeners.push( {target: target, type: type, callback: callback, bubble: bubble} );
-    target.addEventListener(type, callback, bubble);
+Rocket.prototype.doActionKeyUp = function () {
+    var keys = this.thisKeys.getKeysDown();
+    this.doMove(keys);
 };
+/*
+*/
+Rocket.prototype.doMove = function (keys) {
+
+    // if the engines are not under mose control
+    if(!this.mouseDown) {
+        var upF = 0,
+            downF = 0,
+            rightF = 0,
+            leftF = 0;
+
+        if (keys.Up) { upF = -this.engineStrengthY; }
+        if (keys.Down) { downF = this.engineStrengthY; }
+        this.body.rocketForce.y = upF + downF;
+
+        if (keys.Right) { rightF = this.engineStrengthX; }
+        if (keys.Left) { leftF = -this.engineStrengthX; }
+        this.body.rocketForce.x = rightF + leftF;
+
+        this.dashBoard.displayForceLine(this.body.rocketForce.x, this.body.rocketForce.y);
+ 
+    }
+
+};
+/*
+    addEventListener does not return a handle damb it!
+    Creates a standard DOM listener and remembers its signature in the domListeners list
+    so it can be automaticaly deleted before reset. If we don't do this we get multiple listeners registerd.
+    e.g. addDOMEventListener( buttonX, 'mousedown', function () {...}, false );
+ */
+
+Rocket.prototype.addDOMEventListener = function (target, eventType, callback, bubble) {
+    if (target) {
+        this.domListeners.push({ target: target, eventType: eventType, callback: callback, bubble: bubble });
+        target.addEventListener(eventType, callback, bubble);
+    } else {
+        console.log("Attempting to add listener to non existent DOM target:", target);
+    }
+};
+
 /*
  Deletes all things created by Rocket
  */
 Rocket.prototype.removeAllListeners = function () {
 
-    this.listeners.forEach(function(thisListener) {
-        thisListener.target.removeEventListener(thisListener.type, thisListener.callback, thisListener.bubble || false);
+    this.domListeners.forEach(function(thisListener) {
+        thisListener.target.removeEventListener(thisListener.eventType, thisListener.callback, thisListener.bubble || false);
     });
-
-    this.listeners = [];
+    this.domListeners = [];
 
     var self = this;
     this.keyListeners.forEach(function(thisListener) {
-        self.thisKeys.removeGameEventListener(thisListener.eventType, thisListener.callback, thisListener.context)
+        self.thisKeys.removeGameEventListener(thisListener.eventType, thisListener.callback, thisListener.context);
     });
-
     this.keyListeners = [];
-
     this.thisKeys.removeKeyListeners();
+
+    this.rocketListeners.forEach(function(thisListener) {
+        self.removeGameEventListener(thisListener.eventType, thisListener.callback, thisListener.context);
+    });
+    this.rocketListeners = [];
 
 };
 /*
-    Called on keyup
+    Call on mousedown
+    this.engineStartX = mousePos.x + this.rocketGame.animOffset;
+
  */
-Rocket.prototype.cutEngines = function (eventData) {
+Rocket.prototype.startEngines = function (mousePos) {
+    if(this.rocketGame.platform === "desktop")
+        this.engineStartX = mousePos.x + this.rocketGame.animOffset;
+    else
+        this.engineStartX = mousePos.x; // bacause with touch events offsets are alays from the viewport, not the target
 
-    var self;
-    if (eventData) {
-        self = eventData.data.thisContext;
-    }  else {
-        self = this;
-    }
-    self.body.rocketForce.x = 0;
-    self.body.rocketForce.y = 0;
-
+    this.engineStartY = mousePos.y;
+    this.mouseDown = true;
 };
+/*
+    Call on mousemove
+    var xPos = mousePos.x + this.rocketGame.animOffset;
+*/
+Rocket.prototype.fireEngines = function (mousePos) {
+    var xPos;
+    var yPos
 
+    if(this.mouseDown) {
+        // engine under mouse control
+        if(this.rocketGame.platform === "desktop")  xPos = mousePos.x + this.rocketGame.animOffset;
+        else xPos = mousePos.x; // because with touch events co-ords are always relative to the page, NOT the target on which the listener was bound
+       
+        yPos = mousePos.y;
 
+        // so dx will be between -maxDx and +maxDx
+        // This means that from applying maximum +ve force to maximum -ve force the mouse moves maxDx * 2 pixels
+        var maxDx = 30;
+        var maxDy = 30;
+        var dx = xPos - this.engineStartX;
+        var dy = yPos - this.engineStartY;
+        if(dx > maxDx) dx = maxDx;
+        if(dx < -maxDx) dx = -maxDx;
+        if(dy > maxDx) dy = maxDy;
+        if(dy < -maxDy) dy = -maxDy;
+
+        // forces got from mouse position
+        this.body.rocketForce.x = dx * this.engineStrengthX/maxDx;
+        this.body.rocketForce.y = dy * this.engineStrengthY/maxDy;
+
+        this.dashBoard.displayForceLine(this.body.rocketForce.x, this.body.rocketForce.y);
+
+     }
+     
+};
+/**
+*/
+Rocket.prototype.stopEngines = function () {
+    this.dashBoard.stopDisplayForce();
+    this.mouseDown = false;
+    this.body.rocketForce.x = 0;
+    this.body.rocketForce.y = 0;
+};
+/**
+*/
+Rocket.prototype.clearDebug = function () {
+    if(this.debugText) this.render.stopDraw(this.debugText);
+};
+/**
+*/
+Rocket.prototype.debug = function (lineNum, text) {
+   if(this.debugText) this.render.stopDraw(this.debugText);
+   this.debugText = this.render.drawText(text, 10, lineNum * 16, {fillStyle:'white'});
+};
+/*
+ */
+Rocket.prototype.pause = function () {
+
+    if (this.rocketGame.gamePlaying) {
+        this.rocketGame.gamePlaying = false;
+        // we have to/can draw the "paused" text here because: 
+        // 1. we cannot pause the render engine and then expect to have the text rendered to the canvas and 
+        // 2. we don't need to be in the render.update loop because the text only needs drawing once because the engine is stopped
+        // NOTE: this is not the usualy way to use Draw - seek other examples
+        this.pausedText = this.render.drawText("paused", 10, 460, "30px Arial", 'rgb(255,0,0)');
+        this.pausedText.call();
+        $('#canvas-container').stop();
+        this.engine.enabled = false;
+    } else {
+        this.render.stopDraw(this.pausedText);
+        this.rocketGame.gamePlaying = true;
+        this.rocketGame.startAnimation();
+        this.engine.enabled = true;
+    }
+    
+};
 
 
 

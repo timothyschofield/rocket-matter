@@ -2,9 +2,10 @@
     Creates a BlockWorld for Blocks
 
 */
-function BlockWorld(world) {
+function BlockWorld(rocketGame) {
+    this.rocketGame = rocketGame
+    this.world = this.rocketGame.world;
 
-    this.world = world;
     this.defaultWorld = {"items":[{"id":"id_rocket","type":"rocket","rect":{"left":350,"top":210,"width":100,"height":60},"cssOptions":{"background-color":"black","border":"1px solid black"},"physicalOptions":{"frictionAir":0.01,"friction":0.1}},{"id":"id1","type":"rectangle","rect":{"left":-50,"top":-40,"width":1700,"height":50},"cssOptions":{"background-color":"green","border":"1px solid black"},"physicalOptions":{"frictionAir":0,"friction":0.1,"isStatic":true}},{"id":"id2","type":"rectangle","rect":{"left":-50,"top":460,"width":1700,"height":50},"cssOptions":{"background-color":"green","border":"1px solid black"},"physicalOptions":{"frictionAir":0,"friction":0.1,"isStatic":true}},{"id":"id3","type":"rectangle","rect":{"left":-40,"top":0,"width":50,"height":570},"cssOptions":{"background-color":"green","border":"1px solid black"},"physicalOptions":{"frictionAir":0,"friction":0.1,"isStatic":true}},{"id":"id4","type":"rectangle","rect":{"left":1590,"top":0,"width":50,"height":570},"cssOptions":{"background-color":"green","border":"1px solid black"},"physicalOptions":{"frictionAir":0,"friction":0.1,"isStatic":true}}] }; 
 }
 /**
@@ -42,7 +43,7 @@ BlockWorld.prototype.import = function () {
                 break;
 
             case 'rocket':
-                RocketGame.setRocketLocation(thisRect.left + thisRect.width/2, thisRect.top + thisRect.height/2);
+                this.rocketGame.setRocketLocation(thisRect.left + thisRect.width/2, thisRect.top + thisRect.height/2);
                 break;
 
             default: console.log("Unknown object type: ", thisItem.type);

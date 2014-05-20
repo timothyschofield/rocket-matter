@@ -1,335 +1,282 @@
-(function () {
+/*
+*/
+/*****************************************
+Matter is global and contains references to all the Matter engine components
+******************************************/
+function RocketGame() {
 
-    // Matter aliases
-    var Engine = Matter.Engine,
-        Gui = Matter.Gui,
-        World = Matter.World,
-        Bodies = Matter.Bodies,
-        Body = Matter.Body,
-        Composite = Matter.Composite,
-        Composites = Matter.Composites,
-        Common = Matter.Common,
-        Constraint = Matter.Constraint,
-        RenderPixi = Matter.RenderPixi,
-        Events = Matter.Events,
-        Bounds = Matter.Bounds,
-        Vector = Matter.Vector,
-        Vertices = Matter.Vertices,
-        MouseConstraint = Matter.MouseConstraint;
+    this.engine;
+    this.world;
+    this.rocket;
 
-    var RocketGame = {};
+    this.windowWidthDesktop = 800;
+    this.windowWidthMobile = 480;
 
-    var _engine;
-    var _world; // _engine.world;
-    var _mouseConstraint;
-    var _isMobile = /(ipad|iphone|ipod|android)/gi.test(navigator.userAgent);
+    if ( /(ipad|iphone|ipod|android)/gi.test(navigator.userAgent) ) {    
+        this.platform = "mobile";
+        this.windowWidth = this.windowWidthMobile;
+        this.animaDistance = -this.windowWidthMobile;
+    } else {
+        this.platform = "desktop";
+        this.windowWidth = this.windowWidthDesktop;
+        this.animaDistance = -this.windowWidthDesktop;
+    }
 
-    /*****************************************
-    window.load fires this
-    ******************************************/
-    RocketGame.initEngine = function () {
+    this.canvasWidth = 1600;
+    this.canvasHeight = 467;
 
-        if (_isMobile) {
-            RocketGame.platform = "mobile";
-        } else {
-            RocketGame.platform = "desktop";
-        }
+    this.gamePlaying = false;
+    this.orientation = "landscape";    // default
+    this.imagesLoadedFlag = false;
 
-        console.log("platform: " + RocketGame.platform);
+    this.rocketL = this.canvasWidth / 4;
+    this.rocketT = this.canvasHeight / 2;
 
-        RocketGame.gameState = "notstarted"; // "notstarted", "playing", "paused"
-        RocketGame.rocket1 = null;
-        RocketGame.orientation = "landscape";    // default
-        RocketGame.imagesLoadedFlag = false;
+    this.doAnimation = true;     // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< ANIMATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    this.animTime = 35 * 1000; // for moving the canvas rightwards
+    this.animOffset = 0; 
+  
+    var canvasContainer = document.getElementById('canvas-container');
 
-        RocketGame.worldWidth = 1600;
-        RocketGame.worldHeight = 467;
-
-        RocketGame.rocketL = RocketGame.worldWidth / 4;
-        RocketGame.rocketT = RocketGame.worldHeight / 2;
-
-        RocketGame.doAnimation = true;
-        RocketGame.animTime = 40 * 1000; // for moving the canvas right
-
-        if (RocketGame.platform === "desktop") {
-            RocketGame.animaDistance = -800;
-        } else {
-            RocketGame.animaDistance = -480;
-        }
-
-        var canvasContainer = document.getElementById('canvas-container');
-
-
-        // engine options - these are the defaults
-        var options = {
-            positionIterations: 6,  // origonaly 6
-            velocityIterations: 4,  // origonaly 4
-            enableSleeping: false,  // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< origonaly false  
-            timeScale: 1,           // origonaly 1 - experiment with instability
-            render: {
-                options: {
-                    width: RocketGame.worldWidth,
-                    height: RocketGame.worldHeight
-                }
-            }
-        };
-
-        // create a Matter engine, with the element to insert the canvas into
-        // NOTE: this is actually Matter.Engine.create(), see the aliases at top of this file
-        _engine = Engine.create(canvasContainer, options);
-        _world = _engine.world;
-        _world.gravity.y = 1;                        // turn/off Block of gravity
-
-        var renderOptions = _engine.render.options;
-        renderOptions.wireframes = false;             // wireframe or coloured blocks
-        renderOptions.showDebug = true;               // debug statistics overlayed on screen
-        renderOptions.showBroadphase = false;
-        renderOptions.showBounds = false;
-        renderOptions.showVelocity = false;
-        renderOptions.showCollisions = false;
-        renderOptions.showAxes = false;
-        renderOptions.showPositions = false;
-        renderOptions.showAngleIndicator = false;
-        renderOptions.showIds = false;                // show numerical ids
-        renderOptions.showShadows = false;            // used with coloured blocks
-        renderOptions.background = '#444';
-
-        Engine.run(_engine);
-        _engine.enabled = false;
-
-        // set up a scene with bodies
-        RocketGame.initRocketGame();
-    };
-    /*
-    orientation comes from index.html
-    */
-    RocketGame.initRocketGame = function () {
-
-        RocketGame.clearWorld();
-
-        if (RocketGame.rocket1) {
-            RocketGame.rocket1.removeAllListeners();
-            RocketGame.rocket1 = null;
-        }
-
-        RocketGame.imageHandles = {};
-        RocketGame.loadAllImages([
-            { name: "rocket1", path: "./img/Rocket1.png" }
-            ],
-            function (imageHandles) {
-                console.log("images loaded");
-
-                RocketGame.bWorld = new BlockWorld(_world);
-                RocketGame.bWorld.init();
-
-                RocketGame.imagesLoadedFlag = true;
-                RocketGame.imageHandles = imageHandles;
-                RocketGame.rocket1 = new Rocket(_world, _engine, RocketGame.rocketL, RocketGame.rocketT, RocketGame.imageHandles["rocket1"]);
-
-                World.add(_world, RocketGame.rocket1.body);
-                // World.add(_world, Composites.chopper());
-
-                $('#floatingCirclesG').hide();
-                $('#messageText').show();
-
-                // has to be after bodies are created
-                _mouseConstraint = MouseConstraint.create(_engine);
-                World.add(_world, _mouseConstraint);
-
-                if (RocketGame.gameState == "playing") {
-                    if (RocketGame.doAnimation) {
-                        console.log("start animation because game playing")
-                        $('#canvas-container').animate({ left: RocketGame.animaDistance + 'px' }, RocketGame.animTime, 'linear', function () {
-                            console.log("anim ended");
-                        });
-                    }
-                }
-            });
-
-    };
-    /*
-    */
-    RocketGame.changeOrientation = function (windowOrientation) {
-        console.log("orientation = " + windowOrientation);
-
-        if (windowOrientation === undefined) {
-            RocketGame.orientation = "landscape"; // we are on a desktop
-        } else {
-            switch (windowOrientation) {
-                case 0:   // Portrait
-                    RocketGame.orientation = "portrait";
-                    break;
-                case 90:  // Landscape   
-                    RocketGame.orientation = "landscape";
-                    break;
-                case -90: // counterclockwise Landscape
-                    RocketGame.orientation = "landscape";
-                    break;
-                default: // assume Landscape
-                    RocketGame.orientation = "landscape";
+    // engine options - these are the defaults
+    var options = {
+        positionIterations: 6,  // origonaly 6
+        velocityIterations: 4,  // origonaly 4
+        enableSleeping: false,  // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SLEEP <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        timeScale: 1,           // origonaly 1 - experiment with instability
+        render: {
+            options: {
+                width: this.canvasWidth,
+                height: this.canvasHeight
             }
         }
-
-        var $splashScreen = $("#splashScreen");
-        var $rocketGame = $("#rocketGame");
-        var $messageText = $('#messageText');
-
-        $splashScreen.show();
-        $rocketGame.hide();
-
-        if (RocketGame.orientation === "landscape") {
-            $messageText.text("Click to start");
-            $splashScreen.on('click', startGame);
-        } else {
-            $messageText.text("Tilt to play");
-            $splashScreen.off('click');
-
-        }
-
-        function startGame() {
-            RocketGame.gameState = "playing";
-            $splashScreen.hide();
-            $rocketGame.show();
-            console.log("startGame ============================== ")
-            if (RocketGame.doAnimation) {
-                $('#canvas-container').animate({ left: RocketGame.animaDistance + 'px' }, RocketGame.animTime, 'linear', function () {
-                    console.log("anim ended");
-                });
-            }
-            _engine.enabled = true; // probably need pause or something
-        }
     };
-    /*
-    */
-    RocketGame.clearWorld = function () {
 
-        World.clear(_world);
-        Engine.clear(_engine);
+    // create a Matter engine, with the element to insert the canvas into
+    this.engine = Matter.Engine.create(canvasContainer, options);
+    this.engine.rocketGame = this;
+    this.world = this.engine.world;
+    this.world.gravity.y = 1;                 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< turn/off Block of gravity
 
-        $('#canvas-container').stop(); // stop the current animation (if we are in the middle of one)
-        $('#canvas-container').css({ 'left': '0px' });
+    var renderOptions = this.engine.render.options;
+    renderOptions.wireframes = false;             // wireframe or coloured blocks
+    renderOptions.showDebug = true;               // debug statistics overlayed on screen
+    renderOptions.showBroadphase = false;
+    renderOptions.showBounds = false;
+    renderOptions.showVelocity = false;
+    renderOptions.showCollisions = false;
+    renderOptions.showAxes = false;
+    renderOptions.showPositions = false;
+    renderOptions.showAngleIndicator = false;
+    renderOptions.showIds = false;                // show numerical ids
+    renderOptions.showShadows = false;            // used with coloured blocks
+    renderOptions.background = '#444';
 
-        // clear scene graph (if defined in controller)
-        var renderController = _engine.render.controller;
-        if (renderController.clear)
-            renderController.clear(_engine.render);
+    Matter.Engine.run(this.engine);
+    this.engine.enabled = false;
 
-        if (Events) {
+    this.initRocketGame();
+   
+}
+/*
+orientation comes from index.html
+*/
+RocketGame.prototype.initRocketGame = function () {
 
-            // clear all events
-            Events.off(_engine);
+    this.clearWorld();
 
-            // add event for deleting bodies and constraints with right mouse button
-            Events.on(_engine, 'mousedown', function (event) {
-                var mouse = event.mouse,
-                    engine = event.source,
-                    bodies = Composite.allBodies(engine.world),
-                    constraints = Composite.allConstraints(engine.world),
-                    i;
+    if (this.rocket) {
+        this.rocket.removeAllListeners();
+    }
+    Draw.renderList = [];
+    this.render = new Draw(this);
 
-                if (mouse.button === 2) {
+    this.bWorld = new BlockWorld(this);
+    this.bWorld.init();
+    this.rocket = new Rocket(this, this.rocketL, this.rocketT);
 
-                    // find if a body was clicked on
-                    for (i = 0; i < bodies.length; i++) {
-                        var body = bodies[i];
-                        if (Bounds.contains(body.bounds, mouse.position)
-                                && Vertices.contains(body.vertices, mouse.position)) {
+    Matter.World.add(this.world, this.rocket.body);
 
-                            // remove the body that was clicked on
-                            Composite.remove(engine.world, body, true);
-                        }
-                    }
+    $('#floatingCirclesG').hide();
+    $('#messageText').show();
 
-                    // find if a constraint anchor was clicked on
-                    for (i = 0; i < constraints.length; i++) {
-                        var constraint = constraints[i],
-                        bodyA = constraint.bodyA,
-                        bodyB = constraint.bodyB;
+    if (this.gamePlaying && this.doAnimation) {
+        //console.log("start because game is reset");
+        this.startAnimation();
+    }
+    
 
-                        // we need to account for different types of constraint anchor
-                        var pointAWorld = constraint.pointA,
-                        pointBWorld = constraint.pointB;
-                        if (bodyA) pointAWorld = Vector.add(bodyA.position, constraint.pointA);
-                        if (bodyB) pointBWorld = Vector.add(bodyB.position, constraint.pointB);
+};
+/*
+*/
+RocketGame.prototype.changeOrientation = function (windowOrientation) {
+    //console.log("orientation = " + windowOrientation);
 
-                        // if the constraint does not have two valid anchors, skip it
-                        if (!pointAWorld || !pointBWorld)
-                            continue;
-
-                        // find distance between mouse and anchor points
-                        var distA = Vector.magnitudeSquared(Vector.sub(mouse.position, pointAWorld)),
-                        distB = Vector.magnitudeSquared(Vector.sub(mouse.position, pointBWorld));
-
-                        // if mouse was close, remove the constraint
-                        if (distA < 100 || distB < 100) {
-                            Composite.remove(engine.world, constraint, true);
-                        }
-                    }
-
-
-                } // eo mouse button = 2
-            });
+    if (windowOrientation === undefined) {
+        this.orientation = "landscape"; // we are on a desktop
+    } else {
+        switch (windowOrientation) {
+            case 0:   // Portrait
+                this.orientation = "portrait";
+                break;
+            case 90:  // Landscape   
+                this.orientation = "landscape";
+                break;
+            case -90: // counterclockwise Landscape
+                this.orientation = "landscape";
+                break;
+            default: // assume Landscape
+                this.orientation = "landscape";
         }
+    }
 
+    var $splashScreen = $("#splashScreen");
+    var $rocketGame = $("#rocketGame");
+    var $messageText = $('#messageText');
 
-    };
-    /*
+    $splashScreen.show();
+    $rocketGame.hide();
+
+    if (this.orientation === "landscape") {
+        $messageText.text("Click to start");
+        $splashScreen.on('click', startGame);
+    } else {
+        $messageText.text("Tilt to play");
+        $splashScreen.off('click');
+
+    }
+
+    var self = this;
+    function startGame() {
+        self.gamePlaying = true;
+        $splashScreen.hide();
+        $rocketGame.show();
+        if (self.doAnimation) {
+            //console.log("start because game is splashscreen clicked");
+            self.startAnimation();
+        }
+        self.engine.enabled = true; // probably need pause somewhere
+    }
+
+};
+/*
+*/
+RocketGame.prototype.startAnimation = function () {
+    // problem with pauseing and animTime - need to subtract time elapsed before pause
+    var self = this;
+
+    $('#canvas-container').animate({ left: this.animaDistance + 'px' },
+                                {
+                                    start: function () {
+                                        //console.log("start");
+                                    },
+                                    duration: this.animTime,
+                                    easing: 'linear',
+                                    step: function (dx, fx) {
+                                        self.animOffset = dx * self.windowWidthDesktop/self.windowWidth;
+                                    },
+                                    done: function () {
+                                        //console.log("anim ended");
+                                    }
+                                });
+    
+   
+};
+/**
+*/
+RocketGame.prototype.clearWorld = function () {
+
+    Matter.World.clear(this.world);
+    Matter.Engine.clear(this.engine);
+
+    $('#canvas-container').stop(); // stop the current animation (if we are in the middle of one)
+    $('#canvas-container').css({ 'left': '0px' });
+
+    // clear scene graph (if defined in controller)
+    var renderController = this.engine.render.controller;
+    if (renderController.clear)
+        renderController.clear(this.engine.render);
+
+};
+/*
     imageList - list of objects [{"name1, "path1"},...]
     callback returns when all images are loaded with an object { name1: imageObject1, name2: imageObject2...}
     If an image failed to load its imageHandle is null.
-    */
-    RocketGame.loadAllImages = function (imageList, callback) {
-        var numImages = imageList.length;
-        var n;
-        var thisImg;
-        var imageLoadedCount = 0;
-        var imageHandles = {};
+*/
+RocketGame.prototype.loadAllImages = function (imageList, callback) {
+    var numImages = imageList.length;
+    var n;
+    var thisImg;
+    var imageLoadedCount = 0;
+    var imageHandles = {};
 
-        for (n = 0; n < numImages; n++) {
-            loadImage(imageList[n]);
-        }
+    for (n = 0; n < numImages; n++) {
+        loadImage(imageList[n]);
+    }
 
-        var self = this;
-        function loadImage(thisImageObject) {
-            var thisImage = new Image();
-            thisImage.src = thisImageObject.path;
+    var self = this;
+    function loadImage(thisImageObject) {
+        var thisImage = new Image();
+        thisImage.src = thisImageObject.path;
 
-            thisImage.onload = function () {
-                imageLoadedCount++;
-                //console.log("loaded " + thisImageObject.path);
-                imageHandles[thisImageObject.name] = this;
+        thisImage.onload = function () {
+            imageLoadedCount++;
+            //console.log("loaded " + thisImageObject.path);
+            imageHandles[thisImageObject.name] = this;
 
-                if (imageLoadedCount === numImages) {
-                    callback.call(self, imageHandles);
-                }
+            if (imageLoadedCount === numImages) {
+                callback.call(self, imageHandles);
             }
-
-            thisImage.onerror = function () {
-                console.log("error loading image " + thisImageObject.path);
-                imageLoadedCount++;
-                imageHandles[thisImageObject.name] = null;
-            };
         }
-    };
-    /**
-    * Called to set the rocket location when a a world description is loaded from file
-    */
-    RocketGame.setRocketLocation = function (rocketL, rocketT) {
-        RocketGame.rocketL = rocketL;
-        RocketGame.rocketT = rocketT;
-    };
-    /*
-    Sets it all off
-    */
-    if (window.addEventListener) {
-        window.addEventListener('load', RocketGame.initEngine);
-    } else if (window.attachEvent) {
-        window.attachEvent('load', RocketGame.initEngine);
+
+        thisImage.onerror = function () {
+            console.log("error loading image " + thisImageObject.path);
+            imageLoadedCount++;
+            imageHandles[thisImageObject.name] = null;
+        }; 
+    }
+};
+/**
+* Called to set the rocket location when a world description is loaded from file
+*/
+RocketGame.prototype.setRocketLocation = function (rocketL, rocketT) {
+    this.rocketL = rocketL;
+    this.rocketT = rocketT;
+};
+/*
+*/
+RocketGame.prototype.print = function (indent, thing) {
+
+    if(indent > 3) return "";
+
+    var tab = "";
+    var ret1 = "";
+    for(var n = 0; n < indent; n++)
+        tab += "  ";
+
+    var thisType = typeof thing;
+
+    if(thisType !== "object") {
+        ret1 = tab + thisType + " " + thing;
+    } else {
+
+        if (thing instanceof Array) {
+            ret1 += tab + "array";
+           indent++;
+            for(var n = 0; n < thing.length; n++)
+                ret1 += ( "<br>" + tab + this.print(indent, thing[n]) );
+           
+        } else {
+            ret1 += tab + "hash";
+            indent++;
+            for(key in thing) {
+                ret1 += "<br>" + tab + key + ":";
+                ret1 += this.print(indent, thing[key]);
+            }
+            
+        }
     }
 
-    // make RocketGame available on window
-    if (typeof window === 'object' && typeof window.document === 'object') {
-        window.RocketGame = RocketGame;
-    }
+    return ret1;
+};
 
-})();

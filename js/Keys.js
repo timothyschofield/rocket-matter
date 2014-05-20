@@ -14,32 +14,39 @@
     function Keys() {
 
         var self = this;
-        this.keyupCallback = function (eventData) {
-            var thisKeyUp = self.getKey(eventData.keyCode);
+
+        document.addEventListener('keyup', function (eventData) {
+            var thisKeyUp = self.getKeyFromKeycode(eventData.keyCode);
+
+            // if it is a recognized action
             if(thisKeyUp) {
                 Keys.theseKeysDown[thisKeyUp] = false;
+                self.dispatchGameEvent(Keys.KEYUP);
             }
-            self.dispatchGameEvent(Keys.KEYUP);
-        };
-        document.addEventListener('keyup', this.keyupCallback);
+        });
+       
 
-        this.keydownCallback = function (eventData) {
-            var thisKeyDown = self.getKey(eventData.keyCode);
+        document.addEventListener('keydown',  function (eventData) {
+            var thisKeyDown = self.getKeyFromKeycode(eventData.keyCode);
+
+            // if it is a recognized action
             if(thisKeyDown) {
-                Keys.theseKeysDown[thisKeyDown] = true;
+
+                // if it was not already down
+                if(!Keys.theseKeysDown[thisKeyDown]) {
+                    Keys.theseKeysDown[thisKeyDown] = true;
+                    self.dispatchGameEvent(Keys.KEYDOWN);
+                }
             }
-
-            self.dispatchGameEvent(Keys.KEYDOWN);
-
-        };
-        document.addEventListener('keydown', this.keydownCallback);
+        });
+      
 
     } // eo constructor
     Keys.prototype = Object.create(EventDispatcher.prototype);
     Keys.prototype.constructor = Keys;
     /*
      */
-    Keys.prototype.getKey = function (keyCode) {
+    Keys.prototype.getKeyFromKeycode = function (keyCode) {
         var thisAction;
         switch (keyCode) {
 

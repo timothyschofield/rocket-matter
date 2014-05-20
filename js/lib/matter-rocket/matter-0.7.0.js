@@ -231,13 +231,6 @@
                 if (body.isStatic || body.isSleeping)
                     continue;
 
-                //if (body.markedForDelete) {
-                //    console.log("trigger deletebody")
-                //    Events.trigger(world, 'deletebody', { objToDelete: body });
-                //continue;
-                // }
-
-
                 // don't update out of world bodies
                 // TODO: viewports
                 if (body.bounds.max.x < worldBounds.min.x || body.bounds.min.x > worldBounds.max.x
@@ -2472,7 +2465,7 @@
 
             Events.on(engine, 'tick', function (event) {
                 var allBodies = Composite.allBodies(engine.world);
-                MouseConstraint.update(mouseConstraint, allBodies);
+                MouseConstraint.update(engine, mouseConstraint, allBodies);
             });
 
             return mouseConstraint;
@@ -2484,11 +2477,14 @@
         * @param {MouseConstraint} mouseConstraint
         * @param {body[]} bodies
         */
-        MouseConstraint.update = function (mouseConstraint, bodies) {
+        MouseConstraint.update = function (engine, mouseConstraint, bodies) {
             var mouse = mouseConstraint.mouse,
             constraint = mouseConstraint.constraint;
 
             if (mouse.button === 0) {
+
+                /*
+                // stop mouse picking up blocks
                 if (!constraint.bodyB) {
                     for (var i = 0; i < bodies.length; i++) {
                         var body = bodies[i];
@@ -2502,6 +2498,8 @@
                         }
                     }
                 }
+                */
+
             } else {
                 constraint.bodyB = null;
                 constraint.pointB = null;
@@ -2982,6 +2980,7 @@
 
                 _triggerMouseEvents(engine);  // This is where the events to delete get triggered <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
+                // seems fast enough ot just delete one bullet at a time
                 var n;
                 var bulletsLen = Matter.bulletsToDeleteList.length;
                 var bulletToDelete;
@@ -2989,14 +2988,9 @@
                 n = 0;
                 if (bulletsLen > 0) {
                     bulletToDelete = Matter.bulletsToDeleteList.pop();
-                    //console.log("deleting, ", bulletToDelete.id);
-
                     Composite.remove(engine.world, bulletToDelete, true);
                 }
                 //}
-
-
-
 
                 /**
                 * Fired after engine update and all collision events
@@ -3017,11 +3011,7 @@
                 * @param {} event.name The name of the event
                 */
 
-
-
                 Events.trigger(engine, 'afterUpdate beforeRender', event);
-
-
 
                 // render
                 if (engine.render.options.enabled)
@@ -4833,6 +4823,7 @@
         * @return {gui} A container for a configured dat.gui
         */
         Gui.create = function (engine, options) {
+
             var _datGuiSupported = window.dat && window.localStorage,
             _serializer;
 
@@ -5124,6 +5115,7 @@
                     showAngleIndicator: false,
                     showIds: false,
                     showShadows: false
+
                 }
             };
 
@@ -5236,6 +5228,10 @@
 
             if (options.showDebug)
                 Render.debug(engine, context);
+
+            if (engine.rocketGame.render) {
+                engine.rocketGame.render.update();
+            }
         };
 
         /**
@@ -5255,6 +5251,10 @@
             if (engine.timing.timestamp - (render.debugTimestamp || 0) >= 500) {
                 var text = "";
                 text += "fps: " + Math.round(engine.timing.fps) + space;
+
+                if (engine.rocketGame.render)   {
+                    engine.rocketGame.rocket.dashBoard.displayFPS(text);
+                }
 
                 if (engine.metrics.extended) {
                     text += "delta: " + engine.timing.delta.toFixed(3) + space;
@@ -5278,6 +5278,7 @@
             }
 
             if (render.debugString) {
+
                 c.font = "12px Arial";
 
                 if (options.wireframes) {
@@ -5424,28 +5425,32 @@
                 } else {
                     // body polygon
 
+                    // Draw the path first
                     if (body.circleRadius) {
                         c.beginPath();
                         c.arc(body.position.x, body.position.y, body.circleRadius, 0, 2 * Math.PI);
                     } else {
+
                         c.beginPath();
                         c.moveTo(body.vertices[0].x, body.vertices[0].y);
                         for (var j = 1; j < body.vertices.length; j++) {
                             c.lineTo(body.vertices[j].x, body.vertices[j].y);
                         }
+
+
                         c.closePath();
                     }
 
-
+                    // Then do the shading abd stroke
                     if (!options.wireframes) {
                         if (options.showSleeping && body.isSleeping) {
-                            c.fillStyle = Common.shadeColor(body.render.fillStyle, 50);
+                            c.fillStyle = Common.shadeColor(body.render.fillStyle, 50); // make sleeping bodies greyed
                         } else {
                             c.fillStyle = body.render.fillStyle;
                         }
 
-                        c.lineWidth = body.render.lineWidth;
-                        c.strokeStyle = body.render.strokeStyle;
+                        c.lineWidth = body.render.lineWidth;        // px
+                        c.strokeStyle = body.render.strokeStyle;    // hex color
                         c.fill();
                         c.stroke();
                     } else {
