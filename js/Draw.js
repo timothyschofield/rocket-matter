@@ -13,7 +13,7 @@
         this.rocketGame.render.stopDraw(this.pausedText);
 */
 
-/*
+/*	Out of date
     Why is renderList declared as a static?
     Most drawing is done using the single instance of Draw (called "render") in the RocketGame.
     However, CanvasButton inherits from Draw so that it has access to Draw's drawing routines. When

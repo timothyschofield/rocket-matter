@@ -19,6 +19,7 @@ function CanvasButton(rocketWorld, x, y, width, height, options) {
 
     this.rocketWorld = rocketWorld;
     this.render = this.rocketWorld.render;
+	// out of date
     // instanciates Draw's properties on "this", the CanvasButton instance. 
     // so Draw's properties are initalised here, in the CanvasButton constructor.
     // Functions inherited from Draw will probably use them.

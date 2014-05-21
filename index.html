@@ -83,10 +83,6 @@
             position:  fixed;
             background-color: blue;
         }
-        #resetButton {
-            margin-top: 5px;
-            margin-left: 5px;
-        }
         #splashScreen {
             background: -webkit-linear-gradient(black, white);
             background: -moz-linear-gradient(black, white);
@@ -95,10 +91,6 @@
             font: bold 16pt Arial;
             color : white;
             text-align: center;
-        }
-        #tributeText {
-            position: relative;
-            top: 80px;
         }
         #floatingCirclesG {
             position: relative;
@@ -153,7 +145,7 @@
             canvas {
                 width: 960px;       
                 height: 280px;
-                vertical-align: bottom; /* get rid of ghost margin which results from <canvas> being an inline element */
+                vertical-align: bottom;  /* get rid of ghost margin which results from <canvas> being an inline element */
             }
             #canvasClip {
                width: 480px;
@@ -180,7 +172,8 @@
         }
         /***************************/
         #fireButton {
-            position: absolute;  /* relative to rocketGame */
+            position: absolute;			/* relative to rocketGame */
+			box-sizing: content-box;	/* set to content-box to allow borders which otherwise spoil the verical align */ 
             width: 200px;
             height: 75px;
             right: 0px;         /* right relative to the right of its container */
@@ -198,6 +191,7 @@
         }
         #resetButton {
             position: absolute;  
+			box-sizing: content-box;	/* set to content-box to allow borders which otherwise spoil the verical align */ 
             background-color: #428bca;
             border:  2px solid white;
             opacity:  0.85;
@@ -205,16 +199,14 @@
         }
         #resetTextContainer {
             color:  white;
-            opacity: 1;
-            
+            opacity: 1; 
         }
         .buttonTextContainer {
-      
             display: table-cell;
 	        vertical-align: middle;
             height:  inherit;
             width:  inherit;
-            
+           
             user-select: none;
            -webkit-user-select: none;
            -moz-user-select: none;
@@ -235,7 +227,16 @@
             white-space: pre-wrap;
             color:  black;
         }
-        
+		#instructions {
+			position: relative;
+			top:  80px;
+			line-height: 1.5em;
+			visibility: hidden;
+		}
+		#rocketMatter {
+			position: relative;
+			top:  60px;
+		}
         /* NOT USED - I use jQuery animation */ 
         /* smoother this way */
         @-webkit-keyframes xxxKF {
@@ -282,7 +283,6 @@
         <div id="container">
             
             <div id="splashScreen">
-                <div id="tributeText">Rocket-Matter</div>
                 <div id="output"></div>
                 <div id="floatingCirclesG">
                     <div class="f_circleG" id="frotateG_01"></div>
@@ -294,7 +294,14 @@
                     <div class="f_circleG" id="frotateG_07"></div>
                     <div class="f_circleG" id="frotateG_08"></div>
                 </div>
+				<div id="rocketMatter">Rocket-Matter</div>
+				<div id="instructions">
+					<p>Use arrow keys or mouse to control the rocket<br/>
+					Fire with space bar</p>
+					<p>Click to start</p>
+				</div>
                 <div id="messageText"></div>
+	
             </div>
             <div id="rocketGame">
                

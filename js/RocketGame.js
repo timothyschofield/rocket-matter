@@ -104,59 +104,54 @@ RocketGame.prototype.initRocketGame = function () {
         //console.log("start because game is reset");
         this.startAnimation();
     }
-    
-
 };
 /*
 */
 RocketGame.prototype.changeOrientation = function (windowOrientation) {
-    //console.log("orientation = " + windowOrientation);
 
-    if (windowOrientation === undefined) {
-        this.orientation = "landscape"; // we are on a desktop
-    } else {
-        switch (windowOrientation) {
-            case 0:   // Portrait
-                this.orientation = "portrait";
-                break;
-            case 90:  // Landscape   
-                this.orientation = "landscape";
-                break;
-            case -90: // counterclockwise Landscape
-                this.orientation = "landscape";
-                break;
-            default: // assume Landscape
-                this.orientation = "landscape";
-        }
-    }
+	if (windowOrientation === undefined) {
+		this.orientation = "landscape"; // we are on a desktop
+	} else {
+		switch (windowOrientation) {
+			case 0: this.orientation = "portrait"; break; // Portrait
+			case 90: this.orientation = "landscape"; break; // Landscape   
+			case -90: this.orientation = "landscape"; break; // counterclockwise Landscape
+			default: this.orientation = "landscape"; // assume Landscape
+		}
+	}
 
-    var $splashScreen = $("#splashScreen");
-    var $rocketGame = $("#rocketGame");
-    var $messageText = $('#messageText');
+	var $splashScreen = $("#splashScreen");
+	var $rocketGame = $("#rocketGame");
+	var $messageText = $('#messageText');
+	var $instructions = $('#instructions');
 
-    $splashScreen.show();
-    $rocketGame.hide();
+	$splashScreen.show();
+	$rocketGame.hide();
 
-    if (this.orientation === "landscape") {
-        $messageText.text("Click to start");
-        $splashScreen.on('click', startGame);
-    } else {
-        $messageText.text("Tilt to play");
-        $splashScreen.off('click');
+	if (this.platform === "mobile") {
+		if (this.orientation === "landscape") {
+			$messageText.text("Click to start");
+			$splashScreen.on('click', startGame);
+		} else {
+			$messageText.text("Tilt to play");
+			$splashScreen.off('click');
+		}
+	} else {
+		$instructions.css('visibility', 'visible');
+		$splashScreen.on('click', startGame);
+	}
 
-    }
-
-    var self = this;
-    function startGame() {
-        self.gamePlaying = true;
-        $splashScreen.hide();
-        $rocketGame.show();
-        if (self.doAnimation) {
-            //console.log("start because game is splashscreen clicked");
-            self.startAnimation();
-        }
-        self.engine.enabled = true; // probably need pause somewhere
-    }
+	var self = this;
+	function startGame() {
+		self.gamePlaying = true;
+		$splashScreen.hide();
+		$rocketGame.show();
+		if (self.doAnimation) {
+			//console.log("start because game is splashscreen clicked");
+			self.startAnimation();
+		}
+		self.engine.enabled = true; // probably need pause somewhere
+	}
 
 };
 /*
